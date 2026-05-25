@@ -1,0 +1,36 @@
+name: TikTok Live Alert
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check-live:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore Live State
+        uses: actions/cache/restore@v4
+        with:
+          path: live_state.txt
+          key: tiktok-live-state
+          restore-keys: tiktok-live-state-
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Check TikTok & Notify
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python check_live.py
+
+      - name: Save Live State
+        uses: actions/cache/save@v4
+        with:
+          path: live_state.txt
+          key: tiktok-live-state-${{ github.run_id }}
