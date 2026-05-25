@@ -1,0 +1,14 @@
+name: TikTok Alert
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Telegram Message
+        run: |
+          curl -s "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage?chat_id=${{ secrets.CHAT_ID }}&text=تم تشغيل البوت لمراقبة حساب myrtech 🔥"
