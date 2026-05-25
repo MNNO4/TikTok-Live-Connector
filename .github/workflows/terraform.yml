@@ -1,14 +1,41 @@
-name: TikTok Alert
+name: 'Terraform'
 
 on:
-  schedule:
-    - cron: '*/10 * * * *'
+  push:
+    branches: [ "ts-rewrite" ]
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-  notify:
+  terraform:
+    name: 'Terraform'
     runs-on: ubuntu-latest
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
-      - name: Send Telegram Message
-        run: |
-          curl -s "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage?chat_id=${{ secrets.CHAT_ID }}&text=تم تشغيل البوت لمراقبة حساب myrtech 🔥"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format
+        run: terraform fmt -check
+
+      - name: Terraform Plan
+        run: terraform plan -input=false
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/ts-rewrite' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
